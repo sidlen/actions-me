@@ -13,7 +13,7 @@ inputs:
   chr_action:
     description: 'one of available actions: view, create, update, close, delete'
     required: true
-    default: "${{ env.CHR_ACTION }}"
+    default: "view"
   hd_api_url:
     description: 'Manage Engine api url'
     required: false
