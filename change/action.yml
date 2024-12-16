@@ -25,15 +25,15 @@ inputs:
   planned_solve_time:
     description: 'time in minutes'
     required: false
-    default: "${{ env.PLANNED_SOLVE_TIME }}"
+    default: "30"
   template_id:
     description: 'template id of change request'
     required: false
-    default: "${{ env.TEMPLATE_ID }}"
+    default: "1"
   services_id:
     description: 'affected service id'
     required: false
-    default: "${{ env.SERVICES_ID }}"
+    default: "938"
   service_name:
     description: 'name of the service to which the script is applied to the database'
     required: false

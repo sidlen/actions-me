@@ -12,7 +12,7 @@ steps to use:
 create -> apply script -> close (with script output data) -> update (close_details_data)
 
 '''
-input_data_string = os.getenv("INPUT_DATA", "")
+input_data_string = os.getenv("INPUT_DATA")
 try:
     input_data = json.loads(input_data_string)
 except json.JSONDecodeError:
@@ -22,7 +22,7 @@ except json.JSONDecodeError:
         "close_details_id": ""
     }
 
-script_output_data_string = os.getenv("SCRIPT_OUTPUT_DATA", "")
+script_output_data_string = os.getenv("SCRIPT_OUTPUT_DATA")
 try:
     script_output_data = json.loads(script_output_data_string)
 except json.JSONDecodeError:
@@ -46,17 +46,21 @@ url = f"{os.getenv("HD_API_URL")}/changes"
 api_token = os.getenv("HD_API_TOKEN")
 headers = {"authtoken": api_token}
 unix_start_time_ms = int(time.time() * 1000) # in milliseconds
-planned_solve_time = os.getenv("PLANNED_SOLVE_TIME", "30") # in minutes
+planned_solve_time = os.getenv("PLANNED_SOLVE_TIME") # in minutes
 unix_end_time_ms = unix_start_time_ms + (int(planned_solve_time) * 60 * 1000) # in milliseconds
 
-template_id = os.getenv("TEMPLATE_ID", "1") # Standard Change
-services_id = os.getenv("SERVICES_ID", "938") # Other
+template_id = os.getenv("TEMPLATE_ID") # Standard Change
+services_id = os.getenv("SERVICES_ID") # Other
 
 commit_url = os.getenv("COMMIT_URL")
 service_name = os.getenv("SERVICE_NAME")
 approvers_list = os.getenv("APPROVERS_LIST")
-description = os.getenv("DESCRIPTION", f"<div>Применение скриптов {commit_url} по БД {service_name}, согласовано {approvers_list}</div>") # hardcode description
-title = os.getenv("TITLE", "Автоматическое применение скриптов по согласованию Pull Request")
+description = os.getenv("DESCRIPTION")
+if not description:
+    description = f"<div>Применение скриптов {commit_url} по БД {service_name}, согласовано {approvers_list}</div>"  # hardcode description
+title = os.getenv("TITLE")
+if not title:
+    title = f"Автоматическое применение скриптов по согласованию Pull Request"
 
 def get_user_id(user_email):
     url = f"{os.getenv('HD_API_URL')}/users"
@@ -81,15 +85,15 @@ def get_user_id(user_email):
         print(f"\033[91m[ERROR]\033[0m пользователь с email {user_email} не найден")
         sys.exit(1)
 
-change_type_id = os.getenv("CHANGE_TYPE_ID", "1") # Standard
+change_type_id = os.getenv("CHANGE_TYPE_ID") # Standard
 change_manager_id = get_user_id(os.getenv("CHANGE_MANAGER_EMAIL")) # REQUIRED
 change_owner_id = get_user_id(os.getenv("CHANGE_OWNER_EMAIL")) # REQUIRED
 if not os.getenv("CHANGE_REQUESTER_EMAIL"):
     change_requester_id = change_owner_id
 else:
     change_requester_id = get_user_id(os.getenv("CHANGE_REQUESTER_EMAIL"))
-workflow_id = os.getenv("WORKFLOW_ID", "601") # Standard Change
-reason_for_change_id = os.getenv("REASON_FOR_CHANGE_ID", "2") # Maintenance
+workflow_id = os.getenv("WORKFLOW_ID") # Standard Change
+reason_for_change_id = os.getenv("REASON_FOR_CHANGE_ID") # Maintenance
 
 change_data = {
     "change": {
