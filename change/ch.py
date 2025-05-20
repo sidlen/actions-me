@@ -75,19 +75,22 @@ def get_user_id(user_email):
     }
     params = {'input_data': json.dumps(input_data)}
     response = requests.get(url,headers=headers,params=params,verify=False)
-    if response.json().get("users", [])[0].get("id") and response.json().get("users", []):
-        return response.json().get("users", [])[0].get("id")
-    else:
-        print(f"\033[91m[ERROR]\033[0m пользователь с email {user_email} не найден")
+    users = response.json().get("users", [])
+    if not users or not users[0].get("id"):
+        print(f"\033[91m[ERROR]\033[0m Пользователь с email {user_email} не найден или у него нет ID")
         sys.exit(1)
+    return users[0]["id"]
 
 change_type_id = os.getenv("CHANGE_TYPE_ID") # Standard
 change_manager_id = get_user_id(os.getenv("CHANGE_MANAGER_EMAIL")) # REQUIRED
 change_owner_id = get_user_id(os.getenv("CHANGE_OWNER_EMAIL")) # REQUIRED
-if not os.getenv("CHANGE_REQUESTER_EMAIL"):
-    change_requester_id = change_owner_id
-else:
+try:
     change_requester_id = get_user_id(os.getenv("CHANGE_REQUESTER_EMAIL"))
+except Exception as e:
+    print(f"\033[93m[WARNING]\033[0m: Пользователь, создавший PR, не найден в helpdesk. Автор изменения будет установлен как запросивший изменение")
+    print(f"\033[93m[WARNING]\033[0m: Дополнительная информация по ошибке {e}")
+    change_requester_id = change_owner_id
+
 workflow_id = os.getenv("WORKFLOW_ID") # Standard Change
 reason_for_change_id = os.getenv("REASON_FOR_CHANGE_ID") # Maintenance
 
