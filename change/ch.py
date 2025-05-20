@@ -7,11 +7,7 @@ from urllib3.exceptions import InsecureRequestWarning
 import urllib3
 
 urllib3.disable_warnings(InsecureRequestWarning)
-'''
-steps to use:
-create -> apply script -> close (with script output data) -> update (close_details_data)
 
-'''
 input_data_string = os.getenv("INPUT_DATA")
 try:
     input_data = json.loads(input_data_string)
@@ -57,7 +53,7 @@ service_name = os.getenv("SERVICE_NAME")
 approvers_list = os.getenv("APPROVERS_LIST")
 description = os.getenv("DESCRIPTION")
 if not description:
-    description = f"<div>Применение скриптов {commit_url} по БД {service_name}, согласовано {approvers_list}</div>"  # hardcode description
+    description = f"<div>Применение скриптов Pull Request {commit_url} по базе данных сервиса {service_name}, reviewers: {approvers_list}</div>"  # hardcode description
 title = os.getenv("TITLE")
 if not title:
     title = f"Автоматическое применение скриптов по согласованию Pull Request"
@@ -214,7 +210,7 @@ match chr_action.lower():
         json.dump(response.json(), f, indent=4, ensure_ascii=False)
   case "close":
     change_id = input_data.get("change_id", "")
-    ### may be need in next version
+    ### may be need in next ME version
     # input_data_close = {
     #         "status": {
     #             "name": "Completed",
