@@ -26,7 +26,8 @@ except json.JSONDecodeError:
         "status": "",
         "comment": "",
         "applied_files": [],
-        "not_applied_files": []
+        "not_applied_files": [],
+        "applied_time": ""
     }
 
 chr_action = os.getenv("CHR_ACTION") # REQUIRED
@@ -35,7 +36,11 @@ if chr_action.lower() not in ["create", "view", "update", "close", "delete"]:
 
 script_status_success = script_output_data.get("status", "false")
 script_status_comment = script_output_data.get("comment", "Критические ошибки при выполнении скрипта")
-script_status_log = f"Применены скрипты:\n{script_output_data.get("applied_files", "")}\nПропущенные скрипты:\n{script_output_data.get("not_applied_files", "")}"
+script_status_log = f"""
+Применены скрипты: {script_output_data.get("applied_files", "")}
+Пропущенные скрипты: {script_output_data.get("not_applied_files", "")}.
+В случае необходимости отката изменений в базе данных используйте подготовленный скрипт отката (при наличии), либо откатить кластер БД с помощью WAL-G на точку времени начала измененения:  {script_output_data.get("applied_time", "")}
+"""
 close_details_id = input_data.get("close_details_id", "")
 
 url = f"{os.getenv("HD_API_URL")}/changes"
@@ -51,9 +56,10 @@ services_id = os.getenv("SERVICES_ID") # Other
 commit_url = os.getenv("COMMIT_URL")
 service_name = os.getenv("SERVICE_NAME")
 approvers_list = os.getenv("APPROVERS_LIST")
+print(approvers_list)
 description = os.getenv("DESCRIPTION")
 if not description:
-    description = f"<div>Применение скриптов Pull Request {commit_url} по базе данных сервиса {service_name}, reviewers: {approvers_list}</div>"  # hardcode description
+    description = f"""<div>Применение скриптов Pull Request  <a href="{commit_url}">{commit_url}</a> по базе данных сервиса {service_name}, reviewers: {', '.join(approvers_list) if isinstance(approvers_list, list) else approvers_list}</div>"""  # hardcode description
 title = os.getenv("TITLE")
 if not title:
     title = f"Автоматическое применение скриптов по согласованию Pull Request"
