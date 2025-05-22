@@ -30,6 +30,17 @@ except json.JSONDecodeError:
         "applied_time": ""
     }
 
+pr_output_data_string = os.getenv("PR_OUTPUT_DATA")
+try:
+    pr_output_data = json.loads(pr_output_data_string)
+except json.JSONDecodeError:
+    pr_output_data = {
+        "approvers_emails":[],
+        "pr_url": "",
+        "pr_requster_email": "",
+        "pr_merge_user_email": ""
+    }
+
 chr_action = os.getenv("CHR_ACTION") # REQUIRED
 if chr_action.lower() not in ["create", "view", "update", "close", "delete"]:
     raise ValueError(f"Invalid change action: {chr_action}")
@@ -55,11 +66,9 @@ services_id = os.getenv("SERVICES_ID") # Other
 
 commit_url = os.getenv("COMMIT_URL")
 service_name = os.getenv("SERVICE_NAME")
-approvers_list = os.getenv("APPROVERS_LIST")
-print(approvers_list)
 description = os.getenv("DESCRIPTION")
 if not description:
-    description = f"""<div>Применение скриптов Pull Request  <a href="{commit_url}">{commit_url}</a> по базе данных сервиса {service_name}, reviewers: {', '.join(approvers_list) if isinstance(approvers_list, list) else approvers_list}</div>"""  # hardcode description
+    description = f"""<div>Применение скриптов Pull Request  <a href="{pr_output_data.get("pr_url")}">{pr_output_data.get("pr_url")}</a> по базе данных сервиса {service_name}, reviewers: {pr_output_data.get("approvers_emails")}</div>"""  # hardcode description
 title = os.getenv("TITLE")
 if not title:
     title = f"Автоматическое применение скриптов по согласованию Pull Request"
@@ -95,11 +104,11 @@ print(f"[INFO]: Инициализация изменения {chr_action}...")
 change_type_id = os.getenv("CHANGE_TYPE_ID") # Standard
 print(f"[INFO]: Получение id MANAGER {os.getenv("CHANGE_MANAGER_EMAIL")}")
 change_manager_id = get_user_id(os.getenv("CHANGE_MANAGER_EMAIL")) # REQUIRED
-print(f"[INFO]: Получение id OWNER {os.getenv("CHANGE_OWNER_EMAIL")}")
-change_owner_id = get_user_id(os.getenv("CHANGE_OWNER_EMAIL")) # REQUIRED
-print(f"[INFO]: Получение id REQUESTER {os.getenv("CHANGE_REQUESTER_EMAIL")}")
+print(f"[INFO]: Получение id OWNER {pr_output_data.get("pr_merge_user_email")}")
+change_owner_id = get_user_id(pr_output_data.get("pr_merge_user_email")) # REQUIRED
+print(f"[INFO]: Получение id REQUESTER {pr_output_data.get("pr_requster_email")}")
 try:
-    change_requester_id = get_user_id(os.getenv("CHANGE_REQUESTER_EMAIL"))
+    change_requester_id = get_user_id(pr_output_data.get("pr_requster_email"))
 except Exception as e:
     print(f"\033[93m[WARNING]\033[0m: Пользователь, создавший PR, не найден в helpdesk. Автор изменения будет установлен как запросивший изменение")
     print(f"\033[93m[WARNING]\033[0m: Дополнительная информация по ошибке {e}")
